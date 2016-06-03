@@ -28,7 +28,7 @@
     "img/PSP_008579_9020_descent_800-600.jpg",
     "img/glacialcraters_mro.jpg"
   ];
-  var didReset = true;
+  // var didReset = true;
   var whichSitesNow = [0 , 1];
   var imgArray = [];
   for (var i = 0; i < imgFileLocations.length; i++) {
@@ -36,18 +36,14 @@
   }
 
   var VoteTracker = function() {
-    // this.resetP = $('#resetP');
 
+    // this.resetP = $('#resetP');
     this.displayImg = function () {
       whichSitesNow = this.randomPickTwo();
-      this.point1 = $('#clickOne').append("<div><img src=\'" + imgArray[whichSitesNow[0]].fileNameForImg + "\' alt='The first site to consider' title='This is the first landing site to consider for a mission to Mars. Click on the image to vote in favor.' \></div>")
-      this.point2 = $('#clickTwo').append("<div><img src=\'" + imgArray[whichSitesNow[1]].fileNameForImg + "\' alt='The second site to consider' title='This is the second landing site to consider for a mission to Mars. Click on the image to vote in favor.' \></div>");
-      // this.point1.innerHTML = "<img src=\'" + imgArray[whichSitesNow[0]].fileNameForImg + "\' alt='The first site to consider' title='This is the first landing site to consider for a mission to Mars. Click on the image to vote in favor.' \>";
-      // this.point2.innerHTML = "<img src=\'" + imgArray[whichSitesNow[1]].fileNameForImg + "\' alt='The second site to consider' title='This is the second landing site to consider for a mission to Mars. Click on the image to vote in favor.' \>";
-      this.point1.addEventListener('click', this.handleImgClicks);
-      this.point2.addEventListener('click', this.handleImgClicks);
+      $('#image1').append("<img src=\'" + imgArray[whichSitesNow[0]].fileNameForImg + "\' alt='The first site to consider' title='This is the first landing site to consider for a mission to Mars. Click on the image to vote in favor.' \>")
+      $('#image2').append("<img src=\'" + imgArray[whichSitesNow[1]].fileNameForImg + "\' alt='The second site to consider' title='This is the second landing site to consider for a mission to Mars. Click on the image to vote in favor.' \>");
+    }
 
-    };
     this.displayImg();
   };
 
@@ -72,20 +68,25 @@
   };
 
   VoteTracker.prototype.populateChartData = function (pData) {
-    for (var i = 0; i < imgArray.length; i++) {
-      pData.datasets[0].data[i] = imgArray[i].numberOfVotes;
-    };
+    // for (var i = 0; i < imgArray.length; i++) {
+    //   pData.datasets[0].data[i] = imgArray[i].numberOfVotes;
+    // };
+    // return pData;
+
+    pData.datasets[0].data = imgArray.map(function(img){
+      // console.log(img);
+      return img.numberOfVotes;
+    });
+    console.log(pData);
     return pData;
-  }
+  };
 
   VoteTracker.prototype.handleImgClicks = function (event) {
-    var tagHandle = (event.currentTarget.parentElement.id == 'clickOne') ? 0 : 1;
-    var ser = whichSitesNow[tagHandle];
-    if(didReset) {
-      imgArray[ser].numberOfVotes++;
-      didReset = false;
-      event.currentTarget.parentElement.className = 'highlight';
-    }
+    var tagHandle = $(this).attr('id') === 'image1' ? 0 : 1;
+    // if(didReset) {
+    imgArray[whichSitesNow[tagHandle]].numberOfVotes++;
+    //   didReset = false;
+    // }
     raiseTheChartFlag();
     handleTheReset(event);
   };
@@ -116,43 +117,46 @@
   };
 
   VoteTracker.prototype.resetData = function (ev){
-    document.getElementById('confirmButton').className = null;
-    document.getElementById('cancel').className = null;
+    $('#confirmButton').show();
+    $('#cancel').show();
   };
 
   VoteTracker.prototype.confirmData = function (ev) {
     localStorage.setItem('superKey', 'null');
-    document.getElementById('confirmButton').className = "hidden";
-    document.getElementById('cancel').className = "hidden";
+    imgArray.forEach(function(img){
+      img.numberOfVotes = 0;
+    });
+    raiseTheChartFlag();
+    $('#confirmButton').hide();
+    $('#cancel').hide();
   };
 
   VoteTracker.prototype.cancelReset = function (ev) {
-    document.getElementById('confirmButton').className = "hidden";
-    document.getElementById('cancel').className = "hidden";
+    $('#confirmButton').hide();
+    $('#cancel').hide();
   };
 
   function handleTheReset (event) {
-    didReset = true;
-    document.getElementById('clickOne').innerHTML = null;
-    document.getElementById('clickOne').className = null;
-    document.getElementById('clickTwo').innerHTML = null;
-    document.getElementById('clickTwo').className = null;
-    pageOneTracker.displayImg();
+    // didReset = true;
+    $('.site-image').empty();
+    votetracker.displayImg();
   }
 
   function raiseTheChartFlag() {
-    pageOneTracker.makeChart();
+    votetracker.makeChart();
   }
 
   //make the object, it calls all of the other constructors
-  var pageOneTracker = new VoteTracker();
+  var votetracker = new VoteTracker();
   //add listeners to the elements we want to get events from
-  pageOneTracker.point1.addEventListener('click', pageOneTracker.handleImgClicks);
-  pageOneTracker.point2.addEventListener('click', pageOneTracker.handleImgClicks);
+  // VoteTracker.point1.addEventListener('click', VoteTracker.handleImgClicks);
+  // VoteTracker.point2.addEventListener('click', VoteTracker.handleImgClicks);
 
-  document.getElementById('storeButton').addEventListener('click', pageOneTracker.storeData);
-  document.getElementById('retrieveButton').addEventListener('click', pageOneTracker.retrieveData);
-  document.getElementById('resetButton').addEventListener('click', pageOneTracker.resetData);
-  document.getElementById('confirmButton').addEventListener('click', pageOneTracker.confirmData);
-  document.getElementById('cancel').addEventListener('click', pageOneTracker.cancelReset);
+  $('#storeButton').on('click', votetracker.storeData);
+  $('#retrieveButton').on('click', votetracker.retrieveData);
+  $('#resetButton').on('click', votetracker.resetData);
+  $('#confirmButton').on('click', votetracker.confirmData);
+  $('#cancel').on('click', votetracker.cancelReset);
+  $('.site-image').on('click', votetracker.handleImgClicks);
+
 })();
