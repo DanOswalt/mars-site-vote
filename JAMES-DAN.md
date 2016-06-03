@@ -5,3 +5,4 @@
 5. Removed 'didReset' logic, it didn't seem to do anything
 6. Used map and forEach in a few places
 7. We noticed that reseting the data did not redraw the chart, so we added that functionality
+8. Noticed some redundant code, such as a click handler in two places
